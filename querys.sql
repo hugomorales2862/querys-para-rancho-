@@ -1,4 +1,4 @@
-          
+         
 SELECT
     p.per_promocion AS promocion,g.gra_clase as clases,
     p.per_catalogo AS catalogo,
@@ -31,10 +31,36 @@ SELECT
     ) AS tiempo_como_oficial,
     p.per_sexo AS sexo,
     -- === COLUMNA AÑADIDA DESDE LA SUBCONSULTA ===
-    pmf.ult_asc_mas_comun AS ult_asc_mas_comun_promo,(case when e_diagnost =1      then 'DEFICIT'
-                 WHEN e_diagnost=2        THEN 'NORMAL'
-                 WHEN e_diagnost=3        THEN 'SOBREPESO'
-                 WHEN e_diagnost=4        THEN 'OBESIDAD' end)  as perfil_biofisico
+    pmf.ult_asc_mas_comun AS ult_asc_mas_comun_promo,
+  (case when e_diagnost =1      then 'DEFICIT'
+           WHEN e_diagnost=2        THEN 'NORMAL'
+                WHEN e_diagnost=3        THEN 'SOBREPESO'
+              WHEN e_diagnost=4        THEN 'OBESIDAD' end)  as perfil_biofisico,
+TRUNC(
+    CASE
+        WHEN pmf.ult_asc_mas_comun >= t.t_ult_asc
+            THEN (pmf.ult_asc_mas_comun - t.t_ult_asc) / 365
+        ELSE (t.t_ult_asc - pmf.ult_asc_mas_comun) / 365
+    END
+) || ' años ' ||
+TRUNC(
+    MOD(
+        CASE
+            WHEN pmf.ult_asc_mas_comun >= t.t_ult_asc
+                THEN pmf.ult_asc_mas_comun - t.t_ult_asc
+            ELSE t.t_ult_asc - pmf.ult_asc_mas_comun
+        END, 365
+    ) / 30
+) || ' meses ' ||
+MOD(
+    CASE
+        WHEN pmf.ult_asc_mas_comun >= t.t_ult_asc
+            THEN pmf.ult_asc_mas_comun - t.t_ult_asc
+        ELSE t.t_ult_asc - pmf.ult_asc_mas_comun
+    END, 30
+) || ' días' AS tiempo_postergacion
+
+
 FROM
     mper p,
     grados g,
@@ -45,7 +71,7 @@ FROM
     min_unidades_organizacion muo,
     min_puestos pu,
     tiempos t,
-    evaluaciones ev,
+  evaluaciones ev,
     -- === SUBCONSULTA UNIDA CON LEFT JOIN ===
     OUTER (
         SELECT
@@ -94,9 +120,10 @@ WHERE
     AND pu.puesto_id = muo.orgn_puesto
     AND t.t_catalogo = p.per_catalogo
     AND p.per_promocion = pmf.per_promocion
-    AND p.per_catalogo = ev.e_catalogo
+  AND p.per_catalogo = ev.e_catalogo
     AND g.gra_clase IN (1, 2, 3, 4, 5, 6)
     GROUP BY clase, promocion,catalogo,grado,arma,nombre,fecha_nombramiento,desc_empleo,
     empleo,dependencia,plaza,grado_rec_puesto,years_puesto,meses_puesto,
-    dias_puesto,prox_ascenso,ultimo_ascenso_individual,tiempo_como_oficial,sexo,ult_asc_mas_comun_promo,clases,perfil_biofisico
+    dias_puesto,prox_ascenso,ultimo_ascenso_individual,tiempo_como_oficial,sexo,ult_asc_mas_comun_promo,clases,perfil_biofisico,tiempo_postergacion
 ORDER BY clases asc , promocion asc;
+
