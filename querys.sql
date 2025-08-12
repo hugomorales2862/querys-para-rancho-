@@ -257,11 +257,11 @@ ORDER BY clases ASC, promocion ASC;
 ----este si funciono mientras se arregla el min unidades 
 
 
-
   SELECT 
    g.gra_clase as clases,
    p.per_promocion AS promocion,
    p.per_catalogo AS catalogo,
+   //p.per_situacion
    (CASE
         WHEN g.gra_clase = 1 THEN 'OFICIAL'
         WHEN g.gra_clase = 2 THEN 'OFICIAL'
@@ -273,6 +273,7 @@ ORDER BY clases ASC, promocion ASC;
     g.gra_desc_md AS grado,
     a.arm_desc_md AS arma,
     TRIM(p.per_ape1) || ' ' || TRIM(p.per_ape2) || ', ' || TRIM(p.per_nom1) AS nombre,
+      sit.sit_desc_lg as situacion,
     p.per_fec_nomb AS fecha_nombramiento,
     p.per_desc_empleo AS desc_empleo,
     o.org_plaza_desc AS empleo,
@@ -326,6 +327,7 @@ FROM
     JOIN morg o ON p.per_plaza = o.org_plaza
     JOIN grados g2 ON g2.gra_codigo = o.org_grado
     JOIN mdep d ON d.dep_llave = o.org_dependencia
+    JOIN situaciones sit ON p.per_situacion = sit.sit_codigo 
    // JOIN min_unidades_organizacion muo ON muo.orgn_plaza = o.org_plaza
     //JOIN min_puestos pu ON pu.puesto_id = muo.orgn_puesto
     JOIN tiempos t ON t.t_catalogo = p.per_catalogo
@@ -378,5 +380,7 @@ FROM
     ) pmf ON p.per_promocion = pmf.per_promocion
 WHERE
     g.gra_clase IN (1, 2, 3, 4, 5, 6)
-  and p.per_catalogo = 624122
+  and p.per_situacion in ('TH','1L','1P','1$','2N','TJ','2K','2J',11,'T0')
+ // and p.per_catalogo = 624122
 ORDER BY clases ASC, promocion ASC;
+  
