@@ -272,7 +272,6 @@ ORDER BY clases ASC, promocion ASC;
     g.gra_desc_md AS grado,
     a.arm_desc_md AS arma,
     TRIM(p.per_ape1) || ' ' || TRIM(p.per_ape2) || ', ' || TRIM(p.per_nom1) AS nombre,
-      sit.sit_desc_lg as situacion,
     p.per_fec_nomb AS fecha_nombramiento,
     p.per_desc_empleo AS desc_empleo,
     o.org_plaza_desc AS empleo,
@@ -317,7 +316,7 @@ ORDER BY clases ASC, promocion ASC;
       THEN
       'SIN POSTERGACION'
 
-END)AS tiempo_postergacion
+END)AS tiempo_postergacion,sit.sit_desc_lg as situacion
 
 FROM
     mper p
