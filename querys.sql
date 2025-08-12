@@ -127,3 +127,239 @@ WHERE
     dias_puesto,prox_ascenso,ultimo_ascenso_individual,tiempo_como_oficial,sexo,ult_asc_mas_comun_promo,clases,perfil_biofisico,tiempo_postergacion
 ORDER BY clases asc , promocion asc;
 
+
+---este tiene min unidades pero no esta bien 
+
+    
+    
+    SELECT 
+   g.gra_clase as clases,
+   p.per_promocion AS promocion,
+   p.per_catalogo AS catalogo,
+   (CASE
+        WHEN g.gra_clase = 1 THEN 'OFICIAL'
+        WHEN g.gra_clase = 2 THEN 'OFICIAL'
+        WHEN g.gra_clase = 3 THEN 'OFICIAL ASIMILADO'     
+        WHEN g.gra_clase = 4 THEN 'ESPECIALISTA'
+        WHEN g.gra_clase = 5 THEN 'CADETE'
+        WHEN g.gra_clase = 6 THEN 'TROPA'
+    END) AS clase,
+    g.gra_desc_md AS grado,
+    a.arm_desc_md AS arma,
+    TRIM(p.per_ape1) || ' ' || TRIM(p.per_ape2) || ', ' || TRIM(p.per_nom1) AS nombre,
+    p.per_fec_nomb AS fecha_nombramiento,
+    p.per_desc_empleo AS desc_empleo,
+    pu.puesto_nombre AS empleo,
+    d.dep_desc_md AS dependencia,
+    p.per_plaza AS plaza,
+    g2.gra_desc_lg AS grado_rec_puesto,
+    SUBSTR(LPAD(t.t_puesto, 6, '0'), 1, 2) AS years_puesto,
+    SUBSTR(LPAD(t.t_puesto, 6, '0'), 3, 2) AS meses_puesto,
+    SUBSTR(LPAD(t.t_puesto, 6, '0'), 5, 2) AS dias_puesto,
+    t.t_prox_asc AS prox_ascenso,
+    t.t_ult_asc AS ultimo_ascenso_individual,
+    TRIM(
+        TRUNC(t.t_esp_ofi / 10000) || ' años ' ||
+        TRUNC(MOD(t.t_esp_ofi, 10000) / 100) || ' meses ' ||
+        MOD(t.t_esp_ofi, 100) || ' días'
+    ) AS tiempo_como_oficial,
+    p.per_sexo AS sexo,
+    pmf.ult_asc_mas_comun AS ult_asc_mas_comun_promo,
+    (CASE 
+        WHEN ev.e_diagnost = 1 THEN 'DEFICIT'
+        WHEN ev.e_diagnost = 2 THEN 'NORMAL'
+        WHEN ev.e_diagnost = 3 THEN 'SOBREPESO'
+        WHEN ev.e_diagnost = 4 THEN 'OBESIDAD'
+        ELSE 'SIN DIAGNOSTICO'
+    END) AS perfil_biofisico,
+    TRUNC((pmf.ult_asc_mas_comun - t.t_ult_asc) / 365) || ' años ' ||
+TRUNC(MOD((pmf.ult_asc_mas_comun - t.t_ult_asc), 365) / 30) || ' meses ' ||
+MOD((pmf.ult_asc_mas_comun - t.t_ult_asc), 30) || ' días' AS tiempo_postergacion
+
+FROM
+    mper p
+    JOIN grados g ON p.per_grado = g.gra_codigo
+    JOIN armas a ON p.per_arma = a.arm_codigo
+    JOIN morg o ON p.per_plaza = o.org_plaza
+    JOIN grados g2 ON g2.gra_codigo = o.org_grado
+    JOIN mdep d ON d.dep_llave = o.org_dependencia
+    JOIN min_unidades_organizacion muo ON muo.orgn_plaza = o.org_plaza
+    JOIN min_puestos pu ON pu.puesto_id = muo.orgn_puesto
+    JOIN tiempos t ON t.t_catalogo = p.per_catalogo
+     LEFT JOIN evaluaciones ev ON p.per_catalogo = ev.e_catalogo
+        AND ev.e_evaluacion = (
+            SELECT MAX(e2.e_evaluacion)
+            FROM evaluaciones e2
+            WHERE e2.e_catalogo = p.per_catalogo
+        )
+        AND ev.e_numero = (
+            SELECT MAX(e2.e_numero)
+            FROM evaluaciones e2
+            WHERE e2.e_catalogo = p.per_catalogo
+              AND e2.e_evaluacion = ev.e_evaluacion
+        )
+     LEFT JOIN (
+        SELECT
+            counts.per_promocion,
+            MIN(counts.t_ult_asc) AS ult_asc_mas_comun -- Usamos MIN para desempatar
+        FROM
+            (
+                SELECT
+                    p_in.per_promocion,
+                    t_in.t_ult_asc,
+                    COUNT(*) AS cantidad
+                FROM mper p_in
+                JOIN tiempos t_in ON p_in.per_catalogo = t_in.t_catalogo
+                WHERE p_in.per_promocion != 0
+                GROUP BY p_in.per_promocion, t_in.t_ult_asc
+            ) counts
+            JOIN (
+                SELECT
+                    max_c.per_promocion,
+                    MAX(max_c.cantidad) AS max_cantidad
+                FROM
+                    (
+                        SELECT
+                            p_in2.per_promocion,
+                            t_in2.t_ult_asc,
+                            COUNT(*) AS cantidad
+                        FROM mper p_in2
+                        JOIN tiempos t_in2 ON p_in2.per_catalogo = t_in2.t_catalogo
+                        WHERE p_in2.per_promocion != 0
+                        GROUP BY p_in2.per_promocion, t_in2.t_ult_asc
+                    ) max_c
+                GROUP BY max_c.per_promocion
+            ) max_vals ON counts.per_promocion = max_vals.per_promocion
+            AND counts.cantidad = max_vals.max_cantidad
+        GROUP BY counts.per_promocion
+    ) pmf ON p.per_promocion = pmf.per_promocion
+WHERE
+    g.gra_clase IN (1, 2, 3, 4, 5, 6)
+    and p.per_catalogo = 576173
+ORDER BY clases ASC, promocion ASC;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----este si funciono mientras se arregla el min unidades 
+
+
+    SELECT 
+   g.gra_clase as clases,
+   p.per_promocion AS promocion,
+   p.per_catalogo AS catalogo,
+   (CASE
+        WHEN g.gra_clase = 1 THEN 'OFICIAL'
+        WHEN g.gra_clase = 2 THEN 'OFICIAL'
+        WHEN g.gra_clase = 3 THEN 'OFICIAL ASIMILADO'     
+        WHEN g.gra_clase = 4 THEN 'ESPECIALISTA'
+        WHEN g.gra_clase = 5 THEN 'CADETE'
+        WHEN g.gra_clase = 6 THEN 'TROPA'
+    END) AS clase,
+    g.gra_desc_md AS grado,
+    a.arm_desc_md AS arma,
+    TRIM(p.per_ape1) || ' ' || TRIM(p.per_ape2) || ', ' || TRIM(p.per_nom1) AS nombre,
+    p.per_fec_nomb AS fecha_nombramiento,
+    p.per_desc_empleo AS desc_empleo,
+    o.org_plaza_desc AS empleo,
+    d.dep_desc_md AS dependencia,
+    p.per_plaza AS plaza,
+    g2.gra_desc_lg AS grado_rec_puesto,
+    SUBSTR(LPAD(t.t_puesto, 6, '0'), 1, 2) AS years_puesto,
+    SUBSTR(LPAD(t.t_puesto, 6, '0'), 3, 2) AS meses_puesto,
+    SUBSTR(LPAD(t.t_puesto, 6, '0'), 5, 2) AS dias_puesto,
+    t.t_prox_asc AS prox_ascenso,
+    t.t_ult_asc AS ultimo_ascenso_individual,
+    TRIM(
+        TRUNC(t.t_esp_ofi / 10000) || ' años ' ||
+        TRUNC(MOD(t.t_esp_ofi, 10000) / 100) || ' meses ' ||
+        MOD(t.t_esp_ofi, 100) || ' días'
+    ) AS tiempo_como_oficial,
+    p.per_sexo AS sexo,
+    pmf.ult_asc_mas_comun AS ult_asc_mas_comun_promo,
+    (CASE 
+        WHEN ev.e_diagnost = 1 THEN 'DEFICIT'
+        WHEN ev.e_diagnost = 2 THEN 'NORMAL'
+        WHEN ev.e_diagnost = 3 THEN 'SOBREPESO'
+        WHEN ev.e_diagnost = 4 THEN 'OBESIDAD'
+        ELSE 'SIN DIAGNOSTICO'
+    END) AS perfil_biofisico,
+    TRUNC((pmf.ult_asc_mas_comun - t.t_ult_asc) / 365) || ' años ' ||
+TRUNC(MOD((pmf.ult_asc_mas_comun - t.t_ult_asc), 365) / 30) || ' meses ' ||
+MOD((pmf.ult_asc_mas_comun - t.t_ult_asc), 30) || ' días' AS tiempo_postergacion
+
+FROM
+    mper p
+    JOIN grados g ON p.per_grado = g.gra_codigo
+    JOIN armas a ON p.per_arma = a.arm_codigo
+    JOIN morg o ON p.per_plaza = o.org_plaza
+    JOIN grados g2 ON g2.gra_codigo = o.org_grado
+    JOIN mdep d ON d.dep_llave = o.org_dependencia
+   // JOIN min_unidades_organizacion muo ON muo.orgn_plaza = o.org_plaza
+    //JOIN min_puestos pu ON pu.puesto_id = muo.orgn_puesto
+    JOIN tiempos t ON t.t_catalogo = p.per_catalogo
+     LEFT JOIN evaluaciones ev ON p.per_catalogo = ev.e_catalogo
+        AND ev.e_evaluacion = (
+            SELECT MAX(e2.e_evaluacion)
+            FROM evaluaciones e2
+            WHERE e2.e_catalogo = p.per_catalogo
+        )
+        AND ev.e_numero = (
+            SELECT MAX(e2.e_numero)
+            FROM evaluaciones e2
+            WHERE e2.e_catalogo = p.per_catalogo
+              AND e2.e_evaluacion = ev.e_evaluacion
+        )
+     LEFT JOIN (
+        SELECT
+            counts.per_promocion,
+            MIN(counts.t_ult_asc) AS ult_asc_mas_comun -- Usamos MIN para desempatar
+        FROM
+            (
+                SELECT
+                    p_in.per_promocion,
+                    t_in.t_ult_asc,
+                    COUNT(*) AS cantidad
+                FROM mper p_in
+                JOIN tiempos t_in ON p_in.per_catalogo = t_in.t_catalogo
+                WHERE p_in.per_promocion != 0
+                GROUP BY p_in.per_promocion, t_in.t_ult_asc
+            ) counts
+            JOIN (
+                SELECT
+                    max_c.per_promocion,
+                    MAX(max_c.cantidad) AS max_cantidad
+                FROM
+                    (
+                        SELECT
+                            p_in2.per_promocion,
+                            t_in2.t_ult_asc,
+                            COUNT(*) AS cantidad
+                        FROM mper p_in2
+                        JOIN tiempos t_in2 ON p_in2.per_catalogo = t_in2.t_catalogo
+                        WHERE p_in2.per_promocion != 0
+                        GROUP BY p_in2.per_promocion, t_in2.t_ult_asc
+                    ) max_c
+                GROUP BY max_c.per_promocion
+            ) max_vals ON counts.per_promocion = max_vals.per_promocion
+            AND counts.cantidad = max_vals.max_cantidad
+        GROUP BY counts.per_promocion
+    ) pmf ON p.per_promocion = pmf.per_promocion
+WHERE
+    g.gra_clase IN (1, 2, 3, 4, 5, 6)
+ //   and p.per_catalogo = 576173
+ORDER BY clases ASC, promocion ASC;
+
