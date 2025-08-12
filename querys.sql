@@ -257,7 +257,8 @@ ORDER BY clases ASC, promocion ASC;
 ----este si funciono mientras se arregla el min unidades 
 
 
-    SELECT 
+
+  SELECT 
    g.gra_clase as clases,
    p.per_promocion AS promocion,
    p.per_catalogo AS catalogo,
@@ -297,9 +298,26 @@ ORDER BY clases ASC, promocion ASC;
         WHEN ev.e_diagnost = 4 THEN 'OBESIDAD'
         ELSE 'SIN DIAGNOSTICO'
     END) AS perfil_biofisico,
-    TRUNC((pmf.ult_asc_mas_comun - t.t_ult_asc) / 365) || ' años ' ||
-TRUNC(MOD((pmf.ult_asc_mas_comun - t.t_ult_asc), 365) / 30) || ' meses ' ||
-MOD((pmf.ult_asc_mas_comun - t.t_ult_asc), 30) || ' días' AS tiempo_postergacion
+(CASE
+     WHEN pmf.ult_asc_mas_comun < t.t_ult_asc  and  g.gra_codigo not in (93,97)
+     
+     THEN
+       TRUNC((t.t_ult_asc - pmf.ult_asc_mas_comun ) / 365) || ' años ' ||
+         TRUNC(MOD((t.t_ult_asc - pmf.ult_asc_mas_comun), 365) / 30) || ' meses '
+         
+     WHEN pmf.ult_asc_mas_comun > t.t_ult_asc  and  g.gra_codigo not in (93,97)
+   THEN
+     TRUNC((TODAY - pmf.ult_asc_mas_comun::DATE ) / 365) || ' años ' ||
+       TRUNC(MOD((TODAY - pmf.ult_asc_mas_comun::DATE ), 365) / 30) || ' meses '
+         
+    WHEN pmf.ult_asc_mas_comun = t.t_ult_asc  and  g.gra_codigo not in (93,97)
+        THEN
+       'SIN POSTERGACION'
+    WHEN pmf.ult_asc_mas_comun < t.t_ult_asc  and  g.gra_codigo in (93,97)
+      THEN
+      'SIN POSTERGACION'
+
+END)AS tiempo_postergacion
 
 FROM
     mper p
@@ -360,6 +378,5 @@ FROM
     ) pmf ON p.per_promocion = pmf.per_promocion
 WHERE
     g.gra_clase IN (1, 2, 3, 4, 5, 6)
- //   and p.per_catalogo = 576173
+  and p.per_catalogo = 624122
 ORDER BY clases ASC, promocion ASC;
-
