@@ -261,7 +261,6 @@ ORDER BY clases ASC, promocion ASC;
    g.gra_clase as clases,
    p.per_promocion AS promocion,
    p.per_catalogo AS catalogo,
-   //p.per_situacion
    (CASE
         WHEN g.gra_clase = 1 THEN 'OFICIAL'
         WHEN g.gra_clase = 2 THEN 'OFICIAL'
@@ -328,8 +327,6 @@ FROM
     JOIN grados g2 ON g2.gra_codigo = o.org_grado
     JOIN mdep d ON d.dep_llave = o.org_dependencia
     JOIN situaciones sit ON p.per_situacion = sit.sit_codigo 
-   // JOIN min_unidades_organizacion muo ON muo.orgn_plaza = o.org_plaza
-    //JOIN min_puestos pu ON pu.puesto_id = muo.orgn_puesto
     JOIN tiempos t ON t.t_catalogo = p.per_catalogo
      LEFT JOIN evaluaciones ev ON p.per_catalogo = ev.e_catalogo
         AND ev.e_evaluacion = (
@@ -381,6 +378,5 @@ FROM
 WHERE
     g.gra_clase IN (1, 2, 3, 4, 5, 6)
   and p.per_situacion in ('TH','1L','1P','1$','2N','TJ','2K','2J',11,'T0')
- // and p.per_catalogo = 624122
 ORDER BY clases ASC, promocion ASC;
   
