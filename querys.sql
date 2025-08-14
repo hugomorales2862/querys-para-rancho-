@@ -1,5 +1,6 @@
 ----------------SIN MIN PUESTOS
 
+
   SELECT 
    g.gra_clase as clases,
    p.per_promocion AS promocion,
@@ -41,6 +42,12 @@
         ELSE 'SIN DIAGNOSTICO'
     END) AS perfil_biofisico,
 (CASE
+   WHEN (YEAR(t.t_ult_asc) = YEAR(pmf.ult_asc_mas_comun) - 1 AND MONTH(t.t_ult_asc) >= 7 and g.gra_clase = 1)
+          or (YEAR(t.t_ult_asc) = YEAR(pmf.ult_asc_mas_comun) + 5 AND MONTH(t.t_ult_asc) >= 7  and g.gra_clase = 1)          
+          or (YEAR(t.t_ult_asc) = YEAR(pmf.ult_asc_mas_comun) + 4 AND MONTH(t.t_ult_asc) >= 7  and g.gra_clase = 1)
+          or (per_catalogo in (668376,668285,668301,668368,668442))
+    THEN '0 años 0 meses '
+             
      WHEN pmf.ult_asc_mas_comun < t.t_ult_asc  and  g.gra_codigo not in (93,97)
      
      THEN
@@ -63,13 +70,14 @@
              TRUNC(ABS(pmf.ult_asc_mas_comun - t.t_ult_asc) / 365) || ' años ' ||
             TRUNC(MOD(ABS(pmf.ult_asc_mas_comun - t.t_ult_asc), 365) / 30) || ' meses '
 
+  
          
     WHEN pmf.ult_asc_mas_comun = t.t_ult_asc  and  g.gra_codigo not in (93,97)
         THEN
-       'SIN POSTERGACION'
+       '0 años 0 meses '
     WHEN pmf.ult_asc_mas_comun < t.t_ult_asc  and  g.gra_codigo in (93,97)
       THEN
-      'SIN POSTERGACION'
+      '0 años 0 meses '
 
 END)AS tiempo_postergacion,sit.sit_desc_lg as situacion
 
@@ -138,13 +146,16 @@ FROM
 WHERE
     g.gra_clase IN (1, 2, 3, 4, 5, 6)
   and p.per_situacion in ('TH','1L','1P','1$','2N','TJ','2K','2J',11,'T0')
- // and p.per_catalogo in (668376,
+//and p.per_catalogo in (503202)
+//668236)
+and p.per_catalogo in (650739,
+668236)
 //668285,
 //668301,
 //668368,
-//668442, 624122,497610)
+//668442)
+//and (pmf.ult_asc_mas_comun > t.t_ult_asc) 
 ORDER BY clases ASC, promocion ASC;
-
 
 
 
