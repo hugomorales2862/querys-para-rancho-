@@ -103,12 +103,12 @@ FROM
               AND e2.e_evaluacion = ev.e_evaluacion
         )
   
-        AND ev.e_numero = (
-            SELECT MAX(e2.e_numero)
-            FROM evaluaciones e2
-            WHERE e2.e_catalogo = p.per_catalogo
-              AND e2.e_evaluacion = ev.e_evaluacion
-        )
+      //  AND ev.e_numero = (
+        //    SELECT MAX(e2.e_numero)
+          //  FROM evaluaciones e2
+           // WHERE e2.e_catalogo = p.per_catalogo
+            //  AND e2.e_evaluacion = ev.e_evaluacion
+       // )
    LEFT JOIN (
     SELECT   
         per_promocion,
