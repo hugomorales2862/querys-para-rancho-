@@ -148,7 +148,7 @@ WHERE
   and p.per_situacion in ('TH','1L','1P','1$','2N','TJ','2K','2J',11,'T0')
 //and p.per_catalogo in (503202)
 //668236)
-and p.per_catalogo in (650739,
+//and p.per_catalogo in (650739,
 668236)
 //668285,
 //668301,
