@@ -79,7 +79,25 @@
       THEN
       '0 años 0 meses '
 
-END)AS tiempo_postergacion,sit.sit_desc_lg as situacion
+END)AS tiempo_postergacion,sit.sit_desc_lg as situacion,
+--arm_codigo,
+(case   
+when g.gra_clase = 1 and a.arm_codigo IN (5,7)
+then 'FUERZA DE AIRE'
+when g.gra_clase = 1 and a.arm_codigo IN (6)
+then 'FUERZA DE MAR'
+when g.gra_clase IN (1,2) and a.arm_codigo NOT IN (5,6,7)
+then 'FUERZA DE TIERRA'
+when g.gra_clase IN (3,4,6) and o.org_dependencia   IN (2340,2610,2620,2630,2700,2730,4030)
+then 'FUERZA DE MAR'
+when g.gra_clase IN (3,4,6) and o.org_dependencia   IN (2320,2330,2510,2560,2580,2590,2600)
+then 'FUERZA DE AIRE'
+when g.gra_clase IN (3,4,6) and o.org_dependencia   NOT IN (2320,2330,2510,2560,2580,2590,2600,2340,2610,2620,2630,2700,2730,4030)
+then 'FUERZA DE TIERRA'
+when g.gra_clase = 5 
+then 'FUERZA DE TIERRA'
+ end )FUERZA
+
 
 FROM
     mper p
@@ -149,7 +167,7 @@ WHERE
 //and p.per_catalogo in (503202)
 //668236)
 //and p.per_catalogo in (650739,
-668236)
+//668236)
 //668285,
 //668301,
 //668368,
