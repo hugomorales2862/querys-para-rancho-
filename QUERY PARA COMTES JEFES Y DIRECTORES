@@ -12,6 +12,7 @@ TRIM(
     MOD(t_puesto, 100) || ' días'
   ) AS tiempo_puesto, 
   per_desc_empleo as empleo,
+  org_plaza as plaza,
   DEP_DESC_MD AS DEPENDENCIA,
 t_ult_asc AS ultimo_ascenso,
  t_prox_asc AS proximo_ascenso,
@@ -69,7 +70,17 @@ SELECT
         TRUNC(MOD(t.t_puesto, 10000) / 100) || ' meses ' ||
         MOD(t.t_puesto, 100) || ' días'
     ) AS tiempo_puesto, 
-    p.per_desc_empleo AS empleo,
+   (case 
+   when m.org_plaza = 7764780
+   then  'SUBJEFE DEL C.A.D.E.G.'
+   when m.org_plaza = 7860547
+   then  'SUBDIRECTOR GRAL.ESP.ESTANC.EXPL.INDUS. MDN.'
+    when m.org_plaza = 7860323
+   then  'SUBDIRECTOR GRAL.GEST.INT.RED.RIESG. MDN.'
+   else m.org_plaza_desc
+   end
+   )as empleo,
+    m.org_plaza as plaza,
     d.DEP_DESC_MD AS DEPENDENCIA,
     t.t_ult_asc AS ultimo_ascenso,
     t.t_prox_asc AS proximo_ascenso,
@@ -82,4 +93,7 @@ LEFT JOIN GRADOS g ON g.GRA_CODIGO = p.PER_GRADO
 LEFT JOIN MDEP d ON d.DEP_LLAVE = m.ORG_DEPENDENCIA
 WHERE m.ORG_PLAZA IN (7058951,7909013,7049673,7055272,7860547,7764780,6888795,7860323,6936415)
 
-ORDER BY DEPENDENCIA;
+ORDER BY DEPENDENCIA,org_jerarquia;
+
+
+
