@@ -1,3 +1,20 @@
+CREATE VIEW VISTA_COMTES_JEFES_DIRECTORES_SUBDIRECTORES_FOR_DESPACHO
+(
+    catalogo,
+    grado,
+    nombres,
+    org_jerarquia,
+    org_ceom,
+    tiempo_puesto,
+    empleo,
+    plaza,
+    dependencia,
+    ultimo_ascenso,
+    proximo_ascenso,
+    fecha_nombramiento_en_el_puesto
+) AS
+
+
 SELECT PER_CATALOGO AS CATALOGO,
     CASE
         WHEN GRA_CODIGO = 6 THEN TRIM(ARM_DESC_LG)
