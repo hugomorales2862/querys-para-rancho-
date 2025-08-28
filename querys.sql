@@ -1,5 +1,5 @@
 ----CON VISTAS
-create view ejecito_total_despacho (
+create view vista_ejecito_total_despacho (
 clases,
 promocion,
 catalogo,
