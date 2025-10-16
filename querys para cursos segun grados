@@ -1,0 +1,44 @@
+
+SELECT 
+    m.per_promocion AS PROMOCION,
+    m.per_catalogo  AS CATALOGO,
+    g.gra_desc_md   AS GRADO,
+    a.arm_desc_md   AS ARMA,
+
+    TRIM(
+      TRIM(COALESCE(m.per_ape1,'')) || ' ' || TRIM(COALESCE(m.per_ape2,''))
+    ) AS APELLIDOS,
+
+    TRIM(
+      TRIM(COALESCE(m.per_nom1,'')) || ' ' || TRIM(COALESCE(m.per_nom2,''))
+    ) AS NOMBRES,
+
+    CASE 
+      WHEN d.dep_llave = 2300 THEN 'ESTUDIANDO'
+      ELSE COALESCE(c.cur_desc_lg, 'SIN CURSO')
+    END AS CURSO_DESC,
+
+    c.cur_fec_fin AS CURSO_FEC_FIN,
+    m.per_desc_empleo as empleo,
+    d.dep_desc_lg AS DEPENDENCIA,
+    t.t_prox_asc  AS PROXIMO_ASC
+FROM mper m
+JOIN armas  a ON a.arm_codigo = m.per_arma
+JOIN grados g ON g.gra_codigo = m.per_grado
+JOIN morg   o ON o.org_plaza  = m.per_plaza
+JOIN mdep   d ON d.dep_llave  = o.org_dependencia
+JOIN tiempos t ON t.t_catalogo = m.per_catalogo
+
+LEFT JOIN (
+    SELECT 
+        dc.cur_catalogo,     
+        cu.cur_desc_lg,
+        dc.cur_fec_fin
+    FROM dcur dc
+    JOIN cursos cu ON cu.cur_codigo = dc.cur_curso
+    WHERE cu.cur_codigo IN (1001,3217,783)
+) c ON c.cur_catalogo = m.per_catalogo
+
+WHERE g.gra_codigo IN (47,45)
+  AND m.per_situacion IN ('11','T0','TH','T2')
+ORDER BY  g.gra_clase ASC,m.per_promocion ASC;
