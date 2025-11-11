@@ -1,4 +1,3 @@
-
 SELECT 
     m.per_promocion AS PROMOCION,
     m.per_catalogo  AS CATALOGO,
@@ -21,7 +20,8 @@ SELECT
     c.cur_fec_fin AS CURSO_FEC_FIN,
     m.per_desc_empleo as empleo,
     d.dep_desc_lg AS DEPENDENCIA,
-    t.t_prox_asc  AS PROXIMO_ASC
+    t.t_prox_asc  AS PROXIMO_ASC,
+    m.per_fec_nomb as fecha_de_alta
 FROM mper m
 JOIN armas  a ON a.arm_codigo = m.per_arma
 JOIN grados g ON g.gra_codigo = m.per_grado
@@ -39,6 +39,6 @@ LEFT JOIN (
     WHERE cu.cur_codigo IN (1001,3217,783)
 ) c ON c.cur_catalogo = m.per_catalogo
 
-WHERE g.gra_codigo IN (47,45)
+WHERE g.gra_codigo IN (47,45,46)
   AND m.per_situacion IN ('11','T0','TH','T2')
 ORDER BY  g.gra_clase ASC,m.per_promocion ASC;
