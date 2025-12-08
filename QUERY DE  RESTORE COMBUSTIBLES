@@ -1,0 +1,69 @@
+SELECT  'UPDATE COMB_MOVIMIENTOS '||'SET MOV_CANTIDAD = '||(  CASE
+    WHEN N.MOV_DEP = 17 THEN  
+        COALESCE(N.MOV_CANTIDAD,0) 
+        - 0 
+        + COALESCE(S.MOV_CANTIDAD,0)
+
+    WHEN N.MOV_DEP = 50 THEN  
+        COALESCE(N.MOV_CANTIDAD,0) 
+        - 0 
+        + COALESCE(S.MOV_CANTIDAD,0)
+
+    ELSE  
+        COALESCE(N.MOV_CANTIDAD,0)
+        - COALESCE(T.MOV_CANTIDAD,0)
+        + COALESCE(S.MOV_CANTIDAD,0)
+END )||'  WHERE  MOV_ID IN ('||MOV.MOV_ID||'); GO'
+
+ FROM (
+select  MOV_DEP,SUM(MOV_CANTIDAD) AS MOV_CANTIDAD
+ FROM comb_movimientos 
+inner join comb_asignaciones_saldos on  mov_traslado = sal_id 
+ WHERE mov_fecha >= DATETIME(2025-12-01) YEAR TO DAY
+   AND mov_fecha <  DATETIME(2025-12-02) YEAR TO DAY
+  AND mov_situacion = 1
+  and sal_tipo=3
+   AND mov_tipo IN ('N')
+    GROUP BY MOV_DEP
+   ORDER BY MOV_DEP ASC
+)AS N 
+LEFT JOIN (
+select MOV_DEP,SUM(MOV_CANTIDAD) AS MOV_CANTIDAD
+ from comb_movimientos 
+inner join comb_solicitudes on mov_solicitud = sol_id
+inner join comb_asignaciones on sol_asignacion= asig_id
+inner join comb_proyectos on asig_proyecto = 	pro_id
+inner join comb_mensuales on pro_mensual=men_id
+inner join comb_contratos on men_contrato=cont_id 
+where mov_fecha between '2025-11-15 00:00' and '2025-11-30 00:00' and mov_tipo = 'T'  and cont_tipo_combustible =3 
+group by mov_dep ORDER BY MOV_DEP ASC
+) AS T
+ON N.MOV_DEP = T.MOV_DEP
+LEFT JOIN (
+select MOV_DEP,SUM(MOV_CANTIDAD) AS MOV_CANTIDAD from comb_movimientos 
+inner join comb_vales on mov_vale	= val_id
+inner join comb_asignaciones on val_asignacion = asig_id
+inner join comb_proyectos on asig_proyecto = 	pro_id
+inner join comb_mensuales on pro_mensual=men_id
+inner join comb_contratos on men_contrato=cont_id 
+where mov_tipo = 'S'
+and cont_tipo_combustible =3 
+and men_fecha = '2025-12' 
+AND  mov_fecha between '2025-11-01 00:00' and '2025-11-30 00:00' AND VAL_DESPACHO = 56
+--and mov_dep not in(15,20,26,31,40,45,57,64,68,69,75,76,77,79,90,93,96)
+group by mov_dep ORDER BY MOV_DEP ASC
+) AS S
+ON N.MOV_DEP = S.MOV_DEP
+LEFT JOIN (select MOV_DEP,MOV_ID
+ FROM comb_movimientos 
+ WHERE mov_fecha >= DATETIME(2025-12-01) YEAR TO DAY
+   AND mov_fecha <  DATETIME(2025-12-02) YEAR TO DAY
+  AND mov_situacion = 1
+   AND mov_tipo IN ('N') AND MOV_ID IN (select MOV_ID
+ FROM comb_movimientos 
+inner join comb_asignaciones_saldos on  mov_traslado = sal_id 
+ WHERE mov_fecha >= DATETIME(2025-12-01) YEAR TO DAY
+   AND mov_fecha <  DATETIME(2025-12-02) YEAR TO DAY
+  AND mov_situacion = 1
+  and sal_tipo=3
+   AND mov_tipo IN ('N'))) AS MOV ON N.MOV_DEP = MOV.MOV_DEP
